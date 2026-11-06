@@ -20,16 +20,31 @@ import os
 import subprocess
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from pcb_copper_check import find_cli  # noqa: E402
+FALLBACK_CLI_DIRS = (
+    os.path.join(os.path.expanduser("~"), ".easyeda-agent", "bin"),
+    os.path.join(os.path.expanduser("~"), "easyeda-agent", "bin"),
+)
 
 MECH_PREFIX = ("CN", "J", "SW", "KEY", "LED", "K", "RL", "BT", "USB")
 MECH_HINTS = ("connector", "header", "switch", "button", "relay", "led")
 
 
+def find_cli():
+    env = os.environ.get("EASYEDA_CLI")
+    if env and os.path.isfile(env):
+        return env
+    for d in FALLBACK_CLI_DIRS:
+        exe = os.path.join(d, "easyeda.exe" if os.name == "nt" else "easyeda")
+        if os.path.isfile(exe):
+            return exe
+    return "easyeda"
+
+
+CLI = find_cli()
+
+
 def run_cli(args, timeout=180):
-    # 延迟解析：--help / 纯离线分析在没装 easyeda 时也能用
-    proc = subprocess.run([find_cli()] + args, capture_output=True, timeout=timeout, shell=False)
+    proc = subprocess.run([CLI] + args, capture_output=True, timeout=timeout, shell=False)
     raw = proc.stdout or b""
     if not raw.strip():
         err = (proc.stderr or b"")[:600].decode("utf-8", "replace")

@@ -47,24 +47,10 @@ SENSITIVE_FOOTPRINT_HINTS = {
 # 无源晶振对下方铜最敏感（两个信号脚的对地电容直接决定振荡频率），有源振荡器次之
 SEVERITY = {"crystal": "ERROR", "antenna": "ERROR", "oscillator": "WARN", "inductor": "WARN"}
 
-def _cli_candidates():
-    """easyeda 的候选目录：全部是用户级或相对位置，不含本机绝对路径。
-
-    解析顺序见 find_cli()：EASYEDA_CLI → PATH → 本函数返回的目录。
-    """
-    dirs = []
-    home = os.environ.get("EASYEDA_HOME")           # 显式指定安装根目录
-    if home:
-        dirs.append(os.path.join(home, "bin"))
-    dirs.append(os.path.join(os.path.expanduser("~"), "easyeda-agent", "bin"))
-    dirs.append(os.path.join(os.path.expanduser("~"), ".easyeda-agent", "bin"))
-    # 与 easyeda-agent skill 并列安装时：<skills>/easyeda-agent/bin
-    here = os.path.dirname(os.path.abspath(__file__))
-    dirs.append(os.path.normpath(os.path.join(here, "..", "..", "easyeda-agent", "bin")))
-    return tuple(dirs)
-
-
-FALLBACK_CLI_DIRS = _cli_candidates()
+FALLBACK_CLI_DIRS = (
+    os.path.join(os.path.expanduser("~"), ".easyeda-agent", "bin"),
+    os.path.join(os.path.expanduser("~"), "easyeda-agent", "bin"),
+)
 
 
 def find_cli():
@@ -90,7 +76,7 @@ def find_cli():
         return found
     raise RuntimeError(
         "找不到 easyeda CLI。请确认已安装 easyeda-agent 并加进 PATH，"
-        "或设置环境变量 EASYEDA_CLI 指向可执行文件（也可用 EASYEDA_HOME 指定安装根目录）。")
+        "或设置环境变量 EASYEDA_CLI 指向可执行文件。")
 
 
 def run_cli(args_list):

@@ -15,7 +15,7 @@ metadata:
 |---|---|
 | "检查一下我的板子" / "帮我审查原理图和 PCB" / "有没有问题" | [审查](references/review.md) |
 | "这块该怎么摆" / "U1 放哪" / "走线怎么走" / 还在 Layout 阶段 | [布局建议](references/placement.md) |
-| "AMS1117 怎么用" / "这个芯片干嘛的" / "帮我找 X 的用法" | [元件用途](references/part-usage.md) |
+| "AMS1117 怎么用" / "这个芯片干嘛的" / "帮我找 X 的用法" | [元件用途](references/part_usage.md) |
 
 配套参考：[几何格式](references/geometry.md)（铺铜/禁布区 `source` 语法，写脚本或手工核几何时必读）
 

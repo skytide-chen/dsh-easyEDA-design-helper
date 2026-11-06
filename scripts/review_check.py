@@ -35,8 +35,7 @@ from pcb_copper_check import find_cli, run_cli  # noqa: E402
 
 # ---------------------------------------------------------------- 规则知识表
 # severity : 本 skill 的定档（不是照抄工具的 level，见下方注释）
-# meaning  : 问题内容列的措辞，与 references/review.md 的措辞表保持一致
-#            （不要照抄工具返回的英文 message）
+# meaning  : 问题内容列的措辞（中文标准表述），保持前后一致
 # evidence : 该规则能不能单独下结论。False 表示必须交叉验证，否则只能报"待复核"
 RULES = {
     "pin-exit-direction": dict(
