@@ -14,7 +14,7 @@
 |---|---|---|
 | 「检查一下我的板子」「帮我审查原理图和 PCB」「有没有问题」 | [审查](references/review.md) | 五列表：编号 / 严重度 / 问题内容 / 问题网络 / 所在层 |
 | 「这块该怎么摆」「U1 放哪」「走线怎么走」「Layout 阶段」 | [布局建议](references/placement.md) | 主元件、相对位置、走线顺序建议（**不给坐标**） |
-| 「AMS1117 怎么用」「这个芯片干嘛的」「帮我找 X 的用法」 | [元件用途](references/part_usage.md) | 引脚用途 + 典型接线；找不到手册就明说找不到 |
+| 「AMS1117 怎么用」「这个芯片干嘛的」「帮我找 X 的用法」 | [元件用途](references/part-usage.md) | 引脚用途 + 典型接线；找不到手册就明说找不到 |
 
 三个功能共用一套数据采集，区别只在判据和输出格式。
 
@@ -63,9 +63,23 @@
 easyeda health
 ```
 
-必须看到 `status: found`、`windows` 数组非空、`capabilities` 含 `schematic.v1` 与 `pcb.v1`。`windows` 为空说明连接器未连上 —— 先停下让用户处理，不要盲试。
+必须看到 `status: found`、`windows` 数组非空、`capabilities` 含 `schematic.v1` 与 `pcb.v1`。
 
-`easyeda` 不在 `PATH` 时，脚本会依次尝试 `EASYEDA_CLI` 环境变量 → `~/.easyeda-agent/bin` → `~/easyeda-agent/bin` → `PATH`。
+**任一判据不满足 = 环境不足：skill 会停下并输出报告块，把诊断信息交给用户判断，不自行重启 daemon、不重装连接器、不绕道读文件或截图取证。** 排障动作由用户决定；用户回复后要重跑 `easyeda health` 复核，通过才继续。
+
+也可以直接用脚本跑同一套判据（`rc=0` 通过 / `rc=2` 环境不足 / `rc=4` 找不到 CLI）：
+
+```bash
+python scripts/env_check.py
+```
+
+`easyeda` 不在 `PATH` 时，脚本按下面的顺序查找 —— **全部是用户级或相对位置，不含任何本机绝对路径**：
+
+1. 环境变量 `EASYEDA_CLI`（直接指向可执行文件）
+2. `PATH`（含 `easyeda.exe` / `.cmd` / `.bat`）
+3. 环境变量 `EASYEDA_HOME` 下的 `bin/`
+4. `~/easyeda-agent/bin`、`~/.easyeda-agent/bin`
+5. 与本 skill 并列安装的 `../easyeda-agent/bin`（相对 `scripts/` 目录）
 
 ### 可选
 
@@ -77,14 +91,14 @@ easyeda health
 把本仓库整个目录放进 Agent 的 skills 目录：
 
 ```bash
-# Claude Code（Linux/macOS）
+# Linux / macOS：装到用户 skills 目录（~ 展开成你的 home，不写死绝对路径）
 git clone https://github.com/skytide-chen/dsh-easyEDA-design-helper.git ~/.claude/skills/eda-design-helper
 
-# 推荐：克隆到用户目录下的相对位置（不要写盘符绝对路径）
-git clone https://github.com/skytide-chen/dsh-easyEDA-design-helper.git "$HOME/.claude/skills/eda-design-helper"
-
-# Windows PowerShell 等价写法
+# Windows（PowerShell）：同样装到用户 skills 目录
 git clone https://github.com/skytide-chen/dsh-easyEDA-design-helper.git "$env:USERPROFILE\.claude\skills\eda-design-helper"
+
+# 想让仓库放在别的盘：先 clone 到自选目录，再从 skills 目录建 junction 指过去
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\eda-design-helper" -Target "<自选的仓库目录>"
 ```
 
 装好后 Agent 的技能列表里应出现 `eda-design-helper`，`SKILL.md` 会被自动加载。
@@ -126,9 +140,10 @@ SKILL.md                      触发路由 + 三条铁律 + 命令速查 + 输�
 references/
   review.md                   功能一：五列表定义、六步审查流程、严重度分档、报告结构
   placement.md                功能二：主元件判据、摆放/走线原则、输出格式
-  part_usage.md               功能三：数据手册三级查找、证据边界
+  part-usage.md               功能三：数据手册三级查找、证据边界
   geometry.md                 EasyEDA source 几何语法（矩形 / ARC / 多轮廓 even-odd）
 scripts/
+  env_check.py                环境自检：health 判据 → 可复现报告块（不通过即停，不自行处置）
   review_check.py             sch check + bridge-check → 五列表（去重、合并、误报裁决）
   pcb_copper_check.py         铺铜与禁布区审查（敏感器件焊盘逐层判铜）
   placement_brief.py          布局建议的事实采集
@@ -162,8 +177,10 @@ scripts/
 
 ## 版本
 
+- `1.1.0` —— 环境自检升级为硬性中止：连不上连接器时停止并交用户判断，禁止自行重启 daemon / 重装连接器 / 绕道取证
 - `1.0.0` —— 首个版本：三条铁律、四个脚本、两份实测工程验证
 
 ## 许可
 
 [MIT](LICENSE) © 2026 skytide-chen
+>>>>>>> 6afccdb (feat: add env_check.py and enforce hard-stop on environment failure)

@@ -56,7 +56,7 @@
 ### 第一步：定位工程
 
 ```bash
-easyeda health                                     # 确认 windows 非空
+python scripts/env_check.py                        # 环境自检；不通过就停下报错，等用户判断（不要自己乱试）
 easyeda doc ls --project "工程名" --json            # 拿 uuid（不加 --json 是文本表格）
 ```
 
